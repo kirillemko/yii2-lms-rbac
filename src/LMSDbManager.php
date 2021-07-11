@@ -5,7 +5,7 @@
  * @license http://www.yiiframework.com/license/
  */
 
-namespace yii\rbac;
+namespace kirillemko\yiilmsrbac;
 
 use Yii;
 use yii\base\InvalidArgumentException;
@@ -36,7 +36,7 @@ use yii\di\Instance;
  * @author Alexander Kochetov <creocoder@gmail.com>
  * @since 2.0
  */
-class DbManager extends BaseManager
+class LMSDbManager extends BaseManager
 {
     /**
      * @var Connection|array|string the DB connection object or the application component ID of the DB connection.

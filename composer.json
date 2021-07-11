@@ -13,6 +13,6 @@
         "yiisoft/yii2": "*"
     },
     "autoload": {
-        "psr-4": { "kirillemko\\gii\\": "src\\" }
+        "psr-4": { "kirillemko\\yiilmsrbac\\": "src\\" }
     }
 }

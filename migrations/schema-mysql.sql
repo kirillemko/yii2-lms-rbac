@@ -13,10 +13,10 @@ create table `permissions`
 create table `groups_permissions`
 (
     `group_id`        mediumint(8) unsigned not null,
-    `permissions_key` varchar(64) not null,
+    `permission_key` varchar(64) not null,
     primary key (`group_id`, `permissions_key`),
     foreign key (`group_id`) references `groups` (`id`) on delete cascade on update cascade,
-    foreign key (`permissions_key`) references `permissions` (`key`) on delete cascade on update cascade
+    foreign key (`permission_key`) references `permissions` (`key`) on delete cascade on update cascade
 ) engine InnoDB;
 
 

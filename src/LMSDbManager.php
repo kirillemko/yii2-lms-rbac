@@ -28,6 +28,11 @@ class LMSDbManager extends BaseManager
      */
     public $db = 'db';
 
+    /**
+     * @var array Массив id ролей, который нельзя удалить или модифицировать
+     */
+    public $systemRoleIds = [];
+
 
     public $permissionTable = '{{%permissions}}';
     public $groupsTable = '{{%groups}}';
@@ -275,6 +280,122 @@ class LMSDbManager extends BaseManager
     {
         return !isset($userId) || $userId === '';
     }
+
+
+
+
+
+
+
+
+
+
+
+    public function getGroupsWithPermissionsArray()
+    {
+        $groups = (new Query())
+            ->from(['g' => $this->groupsTable])
+            ->leftJoin(['gp' => $this->groupPermissionsTable], 'g.id=gp.group_id')
+            ->all($this->db);
+
+        $groupsToReturn = [];
+        foreach ($groups as $group) {
+            if( !isset($groupsToReturn[$group['id']]) ){
+                $groupsToReturn[$group['id']] = [
+                    'id' => $group['id'],
+                    'name' => $group['name'],
+                    'description' => $group['description'],
+                    'permissions' => [],
+                ];
+            }
+            if( $group['permission_key'] ){
+                $groupsToReturn[$group['id']]['permissions'][$group['permission_key']] = !!$group['permission_key'];
+            }
+        }
+
+        return $groupsToReturn;
+    }
+
+    public function getPermissionsArray()
+    {
+
+        $permissions = (new Query())
+            ->from(['p' => $this->permissionTable])
+            ->all($this->db);
+
+        foreach ($permissions as &$permission) {
+            try{
+                $permission['name'] = \Yii::t('RBAC', $permission['name']);
+            } catch (\Exception $e){
+
+            }
+        }
+
+        return $permissions;
+    }
+
+    public function setGroupPermission($groupId, $permissionKey, $value)
+    {
+
+        if( $value ){
+            return !!$this->db->createCommand()
+                ->insert($this->groupPermissionsTable, [
+                    'group_id' => $groupId,
+                    'permission_key' => $permissionKey
+                ])->execute();
+        } else {
+            $this->db->createCommand()
+                ->delete($this->groupPermissionsTable, [
+                    'group_id' => $groupId,
+                    'permission_key' => $permissionKey
+                ])->execute();
+            return true;
+        }
+    }
+
+    public function saveGroup($groupId, $groupName, $groupDesc)
+    {
+        if( !$groupName || !$groupDesc ){
+            return false;
+        }
+
+        if( !$groupId ){
+            return !!$this->db->createCommand()
+                ->insert($this->groupsTable, [
+                    'name' => $groupName,
+                    'description' => $groupDesc
+                ])->execute();
+        }
+
+        if( in_array($groupId, $this->systemRoleIds) ){
+            return false;
+        }
+
+        return !!$this->db->createCommand()
+            ->update($this->groupsTable, [
+                'name' => $groupName,
+                'description' => $groupDesc
+            ], ['id' => $groupId])->execute();
+
+    }
+
+    public function deleteGroup($groupId)
+    {
+        if( in_array($groupId, $this->systemRoleIds) ){
+            return false;
+        }
+
+        $this->db->createCommand()
+            ->delete($this->groupsTable, [
+                'id' => $groupId
+            ])->execute();
+
+        return true;
+    }
+    
+    
+    
+    
 
 
 

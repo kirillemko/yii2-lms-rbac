@@ -7,6 +7,7 @@
 create table `permissions`
 (
     `key` varchar(64) not null,
+    `name` varchar(128) not null,
     primary key (`key`)
 ) engine InnoDB;
 

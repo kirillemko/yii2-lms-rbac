@@ -15,6 +15,7 @@ use yii\db\Connection;
 use yii\db\Expression;
 use yii\db\Query;
 use yii\di\Instance;
+use yii\rbac\BaseManager;
 
 /**
  * DbManager represents an authorization manager that stores authorization information in database.
@@ -48,19 +49,14 @@ class LMSDbManager extends BaseManager
     /**
      * @var string the name of the table storing authorization items. Defaults to "auth_item".
      */
-    public $itemTable = '{{%auth_item}}';
-    /**
-     * @var string the name of the table storing authorization item hierarchy. Defaults to "auth_item_child".
-     */
-    public $itemChildTable = '{{%auth_item_child}}';
+    public $permissionTable = '{{%permissions}}';
+
     /**
      * @var string the name of the table storing authorization item assignments. Defaults to "auth_assignment".
      */
-    public $assignmentTable = '{{%auth_assignment}}';
-    /**
-     * @var string the name of the table storing rules. Defaults to "auth_rule".
-     */
-    public $ruleTable = '{{%auth_rule}}';
+    public $usersGroupsTable = '{{%users_groups}}';
+
+
     /**
      * @var CacheInterface|array|string the cache used to improve RBAC performance. This can be one of the following:
      *
@@ -768,8 +764,8 @@ class LMSDbManager extends BaseManager
     public function removeChild($parent, $child)
     {
         $result = $this->db->createCommand()
-            ->delete($this->itemChildTable, ['parent' => $parent->name, 'child' => $child->name])
-            ->execute() > 0;
+                ->delete($this->itemChildTable, ['parent' => $parent->name, 'child' => $child->name])
+                ->execute() > 0;
 
         $this->invalidateCache();
 
@@ -782,8 +778,8 @@ class LMSDbManager extends BaseManager
     public function removeChildren($parent)
     {
         $result = $this->db->createCommand()
-            ->delete($this->itemChildTable, ['parent' => $parent->name])
-            ->execute() > 0;
+                ->delete($this->itemChildTable, ['parent' => $parent->name])
+                ->execute() > 0;
 
         $this->invalidateCache();
 
@@ -796,9 +792,9 @@ class LMSDbManager extends BaseManager
     public function hasChild($parent, $child)
     {
         return (new Query())
-            ->from($this->itemChildTable)
-            ->where(['parent' => $parent->name, 'child' => $child->name])
-            ->one($this->db) !== false;
+                ->from($this->itemChildTable)
+                ->where(['parent' => $parent->name, 'child' => $child->name])
+                ->one($this->db) !== false;
     }
 
     /**
@@ -872,8 +868,8 @@ class LMSDbManager extends BaseManager
 
         unset($this->_checkAccessAssignments[(string) $userId]);
         return $this->db->createCommand()
-            ->delete($this->assignmentTable, ['user_id' => (string) $userId, 'item_name' => $role->name])
-            ->execute() > 0;
+                ->delete($this->assignmentTable, ['user_id' => (string) $userId, 'item_name' => $role->name])
+                ->execute() > 0;
     }
 
     /**
@@ -887,8 +883,8 @@ class LMSDbManager extends BaseManager
 
         unset($this->_checkAccessAssignments[(string) $userId]);
         return $this->db->createCommand()
-            ->delete($this->assignmentTable, ['user_id' => (string) $userId])
-            ->execute() > 0;
+                ->delete($this->assignmentTable, ['user_id' => (string) $userId])
+                ->execute() > 0;
     }
 
     /**

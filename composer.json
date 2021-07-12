@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "yiisoft/yii2": "*"
+        "cebe/assetfree-yii2": "*"
     },
     "autoload": {
         "psr-4": { "kirillemko\\yiilmsrbac\\": "src\\" }

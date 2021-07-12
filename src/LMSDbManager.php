@@ -160,9 +160,7 @@ class LMSDbManager extends BaseManager
         $permissions = [];
         foreach ($query->all($this->db) as $row) {
             $permissions[$row['permission_key']] = new Assignment([
-                'userId' => $row['user_id'],
-                'roleName' => $row['permission_key'],
-                'createdAt' => null,
+                'roleName' => $row['permission_key']
             ]);
         }
 
@@ -200,9 +198,7 @@ class LMSDbManager extends BaseManager
         }
 
         return new Assignment([
-            'userId' => $row['user_id'],
             'roleName' => $row['permission_key'],
-            'createdAt' => null,
         ]);
     }
 
@@ -224,9 +220,7 @@ class LMSDbManager extends BaseManager
         $assignments = [];
         foreach ($query->all($this->db) as $row) {
             $assignments[$row['permission_key']] = new Assignment([
-                'userId' => $row['user_id'],
                 'roleName' => $row['permission_key'],
-                'createdAt' => null,
             ]);
         }
 

@@ -11,6 +11,8 @@ use Yii;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\caching\CacheInterface;
+use yii\data\Pagination;
+use yii\db\ActiveQuery;
 use yii\db\Connection;
 use yii\db\Query;
 use yii\di\Instance;
@@ -32,6 +34,15 @@ class LMSDbManager extends BaseManager
      * @var array Массив id ролей, который нельзя удалить или модифицировать
      */
     public $systemRoleIds = [];
+
+    /**
+     * @var array Массив свойств, которые нужно вернуть при поиске людей
+     */
+    public $userFieldsToSend = ['id', 'email'];
+    /**
+     * @var array Массив свойств, пок оторым производим поиск людей
+     */
+    public $userSearchFields = ['email', 'last_name', 'first_name', 'midle_name'];
 
 
     public $permissionTable = '{{%permissions}}';
@@ -306,6 +317,7 @@ class LMSDbManager extends BaseManager
                     'name' => $group['name'],
                     'description' => $group['description'],
                     'permissions' => [],
+                    'deletable' => !in_array($group['id'], $this->systemRoleIds)
                 ];
             }
             if( $group['permission_key'] ){
@@ -392,10 +404,94 @@ class LMSDbManager extends BaseManager
 
         return true;
     }
-    
-    
-    
-    
+
+
+    public function getGroupUsers($groupId, $search=null, $paginate=true)
+    {
+        $usersGroups = (new Query())
+            ->from($this->usersGroupsTable)
+            ->where(['group_id' => $groupId])
+            ->all();
+
+        $userIds = array_map(function($row){ return $row['user_id'];}, $usersGroups);
+
+        $query = Yii::$app->user->identityClass::find()
+            ->andWhere(['IN' , 'id', $userIds]);
+
+        return $this->prepareUsersToSend($query, $search, $paginate);
+    }
+
+    public function getLmsUsers($search=null, $paginate=true)
+    {
+        $query = Yii::$app->user->identityClass::find();
+        return $this->prepareUsersToSend($query, $search, $paginate);
+    }
+
+    private function prepareUsersToSend(ActiveQuery $query, $search=null, $paginate=true)
+    {
+        if( $search ){
+            $search = explode(' ', $search);
+            $conditions = ['or'];
+            foreach( $search as $searchWord ) {
+                foreach ($this->userSearchFields as $userSearchField) {
+                    $conditions[] = ['like', $userSearchField, $searchWord];
+                }
+            }
+            $query = $query->andWhere($conditions);
+        }
+
+        $paginator = null;
+        if( $paginate ){
+            $paginator = new Pagination(['totalCount' => $query->count()]);
+            $query = $query
+                ->offset($paginator->offset)
+                ->limit($paginator->limit);
+        }
+
+        $users = $query ->all();
+
+
+        $toReturn = [];
+        foreach ($users as $user) {
+            $toReturn[] = $user->getAttributes($this->userFieldsToSend);
+        }
+
+        return [
+            'paginator' => $paginator,
+            'users' => $toReturn
+        ];
+    }
+
+    public function revokeUsersFromGroup($groupId, $userIds)
+    {
+        $this->db->createCommand()
+            ->delete($this->usersGroupsTable, [
+                'AND',
+                ['group_id' => $groupId],
+                ['in', 'user_id', $userIds]
+            ])->execute();
+        return true;
+    }
+
+    public function assignUsersToGroup($groupId, $userIds)
+    {
+        foreach ($userIds as $userId) {
+            try {
+                $this->db->createCommand()
+                    ->insert($this->usersGroupsTable, [
+                        'group_id' => $groupId,
+                        'user_id' => $userId
+                    ])->execute();
+            } catch(\Exception $e){
+
+            }
+        }
+        return true;
+    }
+
+
+
+
 
 
 

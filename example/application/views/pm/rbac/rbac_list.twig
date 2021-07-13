@@ -31,7 +31,7 @@
                                 style="width: 100%"
                                 v-loading="loading"
                         >
-{#                            <el-table-column prop="key" label="Разрешение"></el-table-column>#}
+                            {#                            <el-table-column prop="key" label="Разрешение"></el-table-column>#}
                             <el-table-column fixed prop="name" label="Название" min-width="300">
                                 <template slot="header" slot-scope="scope">
                                     <div align="center">
@@ -51,6 +51,7 @@
                                     align="center"
                                     v-for="group in groups"
                                     min-width="140"
+                                    :key="group.id"
                             >
                                 <template slot="header" slot-scope="scope">
                                     <div align="center">
@@ -144,7 +145,13 @@
                                 </el-button>
                             </el-popconfirm>
                             <el-button @click="addGroupModal.show = false">Отмена</el-button>
-                            <el-button type="primary" :loading="addGroupModal.loading" @click="updateGroup">Сохранить</el-button>
+                            <el-button
+                                    type="primary"
+                                    :loading="addGroupModal.loading"
+                                    @click="updateGroup"
+                                    :disabled="!addGroupModal.group.name || !addGroupModal.group.description"
+                            > Сохранить
+                            </el-button>
                         </span>
                     </el-dialog>
 

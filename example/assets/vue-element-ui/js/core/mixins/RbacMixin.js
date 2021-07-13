@@ -8,7 +8,6 @@ var RbacMixin = {
                 url:'/pm/rbac/getMyPermissions'
             })
                 .then(data => {
-                    console.log(data);
                     this.rbac_permissions = data.permissions
                 })
         },

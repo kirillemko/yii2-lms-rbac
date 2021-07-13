@@ -1,0 +1,313 @@
+{% extends 'layout-pm.twig' %}
+
+{% block title %}Справочник разрешений{% endblock %}
+
+{% block head %}{% endblock %}
+
+{% block content %}
+
+
+    <div class="content_path"  id="vueAppRbacList">
+        <!-- content -->
+        <div id="content" class="app-content fon-block library">
+            <div class="app-content-body ">
+                <div class="title-block padd-block">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <h1 class="ff-b">
+                                RBAC
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-block mb-md interview-block ">
+
+                    <el-row style="margin-top:20px">
+                        <el-table
+                                :data="filteredPermissions"
+                                ref=""
+                                border
+                                style="width: 100%"
+                                v-loading="loading"
+                        >
+{#                            <el-table-column prop="key" label="Разрешение"></el-table-column>#}
+                            <el-table-column fixed prop="name" label="Название" min-width="300">
+                                <template slot="header" slot-scope="scope">
+                                    <div align="center">
+                                        <div >
+                                            <el-input
+                                                    v-model="permissionsSearch"
+                                                    placeholder="Фильтр по названию"
+                                                    size="medium"
+                                                    clearable
+                                                    prefix-icon="el-icon-search"
+                                            ></el-input>
+                                        </div>
+                                    </div>
+                                </template>
+                            </el-table-column>
+                            <el-table-column
+                                    align="center"
+                                    v-for="group in groups"
+                                    min-width="140"
+                            >
+                                <template slot="header" slot-scope="scope">
+                                    <div align="center">
+                                        ${group.name}$
+                                        <div >
+                                            <el-button
+                                                    type="primary"
+                                                    @click="manageUsersModalShow(group.id)"
+                                                    plain
+                                                    size="mini"
+                                                    style=""
+                                                    icon="el-icon-user-solid"
+                                            >
+                                            </el-button>
+                                            <el-button
+                                                    v-if="group.deletable && can('permissions.manage_groups')"
+                                                    type="primary"
+                                                    @click="updateGroupShow(group.id)"
+                                                    plain
+                                                    size="mini"
+                                                    style=""
+                                                    icon="el-icon-edit"
+                                            >
+                                            </el-button>
+                                        </div>
+                                    </div>
+                                </template>
+                                <template slot-scope="scope" >
+                                    <el-switch
+                                            :disabled="!can('permissions.manage')"
+                                            v-model="group.permissions[scope.row.key]"
+                                            @change="permissionChanged(group, scope.row.key)"
+                                    >
+                                    </el-switch>
+                                </template>
+                            </el-table-column>
+                            <el-table-column width="80" align="right" v-if="can('permissions.manage_groups')">
+                                <template slot="header" slot-scope="scope">
+                                    <div align="center">
+                                        <el-button
+                                                type="primary"
+                                                @click="updateGroupShow()"
+                                                plain
+                                                size="mini"
+                                                style=""
+                                                icon="el-icon-plus"
+                                        >
+                                        </el-button>
+                                    </div>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </el-row>
+
+
+
+
+                    <el-dialog
+                            title="Редактирование группы"
+                            :visible.sync="addGroupModal.show"
+                            width="50%"
+                    >
+                        <el-row style="margin-top:-30px">
+                            <el-form label-width="170px">
+                                <el-form-item label="Название группы">
+                                    <el-input v-model="addGroupModal.group.name"></el-input>
+                                </el-form-item>
+                                <el-form-item label="Описание группы">
+                                    <el-input v-model="addGroupModal.group.description"></el-input>
+                                </el-form-item>
+                            </el-form>
+                        </el-row>
+
+                        <span slot="footer" class="dialog-footer">
+                            <el-popconfirm
+                                    v-show="addGroupModal.group.id"
+                                    confirm-button-text='Да'
+                                    cancel-button-text='нет'
+                                    icon="el-icon-question"
+                                    title="Вы уверены, что хотите удалить группу?"
+                                    @confirm="deleteGroup(addGroupModal.group.id)"
+                            >
+                                <el-button
+                                        slot="reference"
+                                        type="danger"
+                                        plain
+                                        icon="el-icon-delete"
+                                        :loading="addGroupModal.loading"
+                                >
+                                    Удалить группу
+                                </el-button>
+                            </el-popconfirm>
+                            <el-button @click="addGroupModal.show = false">Отмена</el-button>
+                            <el-button type="primary" :loading="addGroupModal.loading" @click="updateGroup">Сохранить</el-button>
+                        </span>
+                    </el-dialog>
+
+
+
+                    <el-dialog
+                            title="Пользователи группы"
+                            :visible.sync="manageUsersModal.show"
+                            width="70%"
+                    >
+                        <span slot="title">
+                            Пользователи группы <span v-show="manageUsersModal.groupUsersTotal">( ${manageUsersModal.groupUsersTotal}$ )</span>
+                        </span>
+                        <el-row style="margin-bottom: 5px; margin-top:-30px">
+                            <el-col :span="14" v-if="can('permissions.manage_groups')">
+                                <el-popconfirm
+                                        confirm-button-text='Да'
+                                        cancel-button-text='нет'
+                                        icon="el-icon-question"
+                                        icon-color="red"
+                                        title="Вы уверены, что хотите удалить пользователей?"
+                                        @confirm="manageUsersModalDeleteSelectedUsers"
+                                >
+                                    <el-button
+                                            slot="reference"
+                                            type="default"
+                                            icon="el-icon-delete"
+                                            size="medium"
+                                            :loading="manageUsersModal.loading"
+                                    >
+                                        Удалить выбранных
+                                    </el-button>
+                                </el-popconfirm>
+                                <el-button type="primary" plain size="medium" @click="lmsUsersModalShow">Добавить пользователей</el-button>
+                            </el-col>
+                            <el-col :span="10" align="right">
+                                <el-input
+                                        v-model="manageUsersModal.search"
+                                        placeholder="Поиск"
+                                        size="medium"
+                                        @input="manageUsersModalDebounceSearch"
+                                        clearable
+                                        prefix-icon="el-icon-search"
+                                ></el-input>
+                            </el-col>
+
+                        </el-row>
+                        <el-table
+                                :data="manageUsersModal.groupUsers"
+                                ref="manageUsersModalUsersTable"
+                                empty-text="Нет пользователей"
+                                v-loading="manageUsersModal.loading"
+                        >
+                            <el-table-column
+                                    type="selection"
+                                    width="55">
+                            </el-table-column>
+                            <el-table-column label="Email" prop="email"></el-table-column>
+                        </el-table>
+                        <el-button
+                                v-show="manageUsersModal.page!=1"
+                                @click="manageUsersModalLoadPage('prev')"
+                                style="margin-top:15px"
+                                plain
+                                type="primary">
+                            Предыдущая страница
+                        </el-button>
+                        <el-button
+                                v-show="manageUsersModal.nextPage"
+                                @click="manageUsersModalLoadPage('next')"
+                                style="margin-top:15px"
+                                plain
+                                type="primary">
+                            Следующая страница
+                        </el-button>
+
+                        <span slot="footer" class="dialog-footer">
+                            <el-button @click="manageUsersModal.show = false">Закрыть</el-button>
+                        </span>
+                    </el-dialog>
+
+
+
+
+
+
+
+
+                    <el-dialog
+                            title="Добавить пользователей в группу"
+                            :visible.sync="lmsUsersModal.show"
+                            width="65%"
+                    >
+                        <el-row style="margin-bottom: 5px; margin-top:-30px">
+                            <el-col :span="14">
+                                <el-button
+                                        type="primary"
+                                        plain
+                                        size="medium"
+                                        :loading="lmsUsersModal.loading"
+                                        @click="addSelectedUsersToGroup"
+                                >Добавить выбранных пользователей
+                                </el-button>
+                            </el-col>
+                            <el-col :span="10" align="right">
+                                <el-input
+                                        v-model="lmsUsersModal.search"
+                                        placeholder="Поиск"
+                                        size="medium"
+                                        @input="lmsUsersModalDebounceSearch"
+                                        clearable
+                                        prefix-icon="el-icon-search"
+                                ></el-input>
+                            </el-col>
+
+                        </el-row>
+                        <el-table
+                                :data="lmsUsersModal.users"
+                                ref="lmsUsersModalUsersTable"
+                                empty-text="Нет пользователей"
+                                v-loading="lmsUsersModal.loading"
+                        >
+                            <el-table-column
+                                    type="selection"
+                                    width="55">
+                            </el-table-column>
+                            <el-table-column label="Email" prop="email"></el-table-column>
+                        </el-table>
+                        <el-button
+                                v-show="lmsUsersModal.page!=1"
+                                @click="lmsUsersModalLoadPage('prev')"
+                                style="margin-top:15px"
+                                plain
+                                type="primary">
+                            Предыдущая страница
+                        </el-button>
+                        <el-button
+                                v-show="lmsUsersModal.nextPage"
+                                @click="lmsUsersModalLoadPage('next')"
+                                style="margin-top:15px"
+                                plain
+                                type="primary">
+                            Следующая страница
+                        </el-button>
+
+                        <span slot="footer" class="dialog-footer">
+                            <el-button @click="lmsUsersModal.show = false">Закрыть</el-button>
+                        </span>
+                    </el-dialog>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+{% endblock %}
+
+
+
+{% block footer %}
+    <script src="{{ base_url('assets/vue-element-ui/js/pm/rbac/rbac_list.js?v=') }}{{ data.pm_version }}"></script>
+{% endblock %}

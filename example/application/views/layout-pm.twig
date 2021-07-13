@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en" class="user{{ user.id ?? data.user.id }}">
+<head>
+    <meta charset="utf-8"/>
+    <title>{% block title %}{% endblock %}</title>
+    <meta name="description" content=""/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+    <script>
+        {# window.onload = function() {setTimeout(function(){document.body.style.opacity="100";},0);}; #}
+        window.onload = function () {
+            document.body.style.opacity = "100";
+        };
+    </script>
+
+    <link rel="shortcut icon" href="/assets/general_template/img/favicon.png" type="image/png">
+
+    <link rel="stylesheet" href="/assets/libs/jquery/bootstrap/dist/css/bootstrap.css" type="text/css"/>
+    <script src="/assets/js/modernizr.custom.js"></script>
+    <link href="{{ base_url('/assets/general_styles/css/custom.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ base_url('assets/libs/slick/slick.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ base_url('assets/libs/slick/slick-theme.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ base_url('assets/general_styles/libs/toastr/css/toastr.min.css') }}" rel="stylesheet"/>
+    <link rel="stylesheet" href="{{ base_url('assets/fontawesome/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ base_url('assets/jquery/ui/1.12.1/jquery-ui.min.css') }}">
+    {# <link href="{{ base_url('assets/avito/js/chosen/chosen.css') }}" rel="stylesheet" type="text/css"> #}
+    {% block head %}{% endblock %}
+    <link href="{{ base_url('assets/general_template/main_styles.css?v13') }}" rel="stylesheet"
+          type="text/css" {# onload="document.body.style.opacity=100;" #}>
+
+    {% if (is_boxmode is defined and is_boxmode == 1) or(data.is_boxmode is defined and data.is_boxmode == 1) %}
+        <link rel="stylesheet" href="{{ base_url('assets/css/boxmode.css') }}">
+    {% endif %}
+
+    {% if (chat_mod is defined and chat_mod is not empty) or(data.chat_mod is defined and data.chat_mod is not empty) %}
+        {{ chat_mod ? chat_mod|raw : data.chat_mod|raw }}
+    {% endif %}
+
+    <link href="{{ base_url('/assets/general_template/js/daterangepicker/daterangepicker.css') }}" rel="stylesheet" type="text/css">
+
+
+
+    <link rel="stylesheet" href="{{ base_url('/assets/vue-element-ui/css/core/element-ui.min.css') }}">
+    <link rel="stylesheet" href="{{ base_url('/assets/vue-element-ui/css/pm/pm.css?v=') }}{{ data.pm_version }}">
+
+    <script src="{{ base_url('assets/vue-element-ui/js/core/axios.min.js') }}"></script>
+{#    <script src="{{ base_url('assets/vue-element-ui/js/core/vue.2.6.12.min.js') }}"></script>#}
+    <script src="{{ base_url('assets/vue-element-ui/js/core/vue.js') }}"></script>
+
+    <script src="{{ base_url('assets/vue-element-ui/js/core/element-ui.min.js') }}"></script>
+    <script src="{{ base_url('assets/vue-element-ui/js/core/element-ui.locale.ru-RU.js') }}"></script>
+    <script src="{{ base_url('assets/vue-element-ui/js/core/mixins/RequestMixin.js?v=') }}{{ data.pm_version }}"></script>
+    <script src="{{ base_url('assets/vue-element-ui/js/core/mixins/DebounceMixin.js?v=') }}{{ data.pm_version }}"></script>
+    <script src="{{ base_url('assets/vue-element-ui/js/core/mixins/RbacMixin.js?v=') }}{{ data.pm_version }}"></script>
+
+    <style>
+        body {
+            opacity: 0;
+        }
+    </style>
+
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-39425862-3"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+
+        gtag('js', new Date());
+        gtag('config', 'UA-39425862-3');
+    </script>
+</head>
+<body class="user{{ auth_user_id }}">
+
+
+<div class="page-container">
+    {% set headerTemplate = sidebar ~ '/header.twig' %}
+
+    {# временный костыль #}
+    {% if sidebar == 'manager' %}
+        {% set headerTemplate = 'manager/header.twig' %}
+    {% endif %}
+
+    {% if (user.role_default == 3) and ((data.delegatedStudent|length > 0) or (delegatedStudent|length > 0)) %}
+        {% set sidebar = 'student' %}
+    {% endif %}
+
+    {% include headerTemplate %}
+    {% include sidebar ~ '/sidebar.twig' %}
+    <div class="main-content-body" style="background-color: #EFF2F6">
+        {% block content %}{% endblock %}
+    </div>
+    <script src="{{ base_url('assets/libs/jquery/jquery/dist/jquery.js') }}"></script>
+    <script src="{{ base_url('assets/jquery/ui/1.12.1/jquery-ui.min.js') }}"></script>
+    <script src="{{ base_url('assets/general_styles/libs/toastr/js/toastr.min.js') }}"></script>
+    <script src="{{ base_url('assets/libs/jquery/bootstrap/dist/js/bootstrap.js') }}"></script>
+    <script src="{{ base_url('assets/libs/slick/slick.min.js') }}"></script>
+    {# <script src="{{ base_url('assets/avito/js/chosen/chosen.jquery.min.js')}}"></script> #}
+    <script src="{{ base_url('assets/avito/js/common.js') }}"></script>
+    <script src="{{ base_url('assets/general_styles/js/menu.js') }}"></script>
+    <script src="{{ base_url('assets/js/log.js') }}"></script>
+    <script src="{{ base_url('assets/general_template/js/target_audience.js') }}"></script>
+    {# <script src="{{ base_url('assets/avito/js/main.js') }}"></script> #}
+
+    {# notification (student, manager, coordinator) #}
+    {% if sidebar == 'student' or sidebar=='teacher' or sidebar == 'manager' %}
+    <script src="{{ base_url('assets/avito/js/student_notif.js') }}"></script>
+    {% include 'student/catalog/edit_modal.twig' %}
+    <!-- Modal -->
+    <div class="modal fade" id="calendar-day-events" tabindex="-1" role="dialog" aria-labelledby="calendar-day-events" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal not saved alert -->
+    <div class="modal fade" id="info-about-lost-data" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title ff-b">Внимание</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Внесенные изменения не будут сохранены. Для сохранения внесенных изменений нажмите на кнопку «Сохранить» внизу страницы»</p>
+                </div>
+                <div class="modal-footer">
+                    <button id="action-save-btn" type="button" class="action-success" data-dismiss="modal" title="Вернуться и сохранить">Вернуться и сохранить</button>
+                    <button id="without-save-btn" type="button" class="btn action-cancel" title="Продолжить без сохранения">Продолжить без сохранения</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="import_users_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog  modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+                    <h4 class="modal-title ff-b" id="myModalLabel">Импорт пользователей из excel</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <div id="upload-input">
+                            <input id="import_excel" type="hidden" name="import_excel" value="">
+                            <input type="file" class="adapt-img" value="" accept="*/*" style="z-index: 1;"
+                                   data-api-url="/targetAudience/importExcelUsers" data-inp-name="import_excel">
+                            <div class="upload-info dev-plan-upload" style="z-index: -1;">
+                                <span class="upload-info-text"
+                                      data-text="Параметры файла для загрузки:<br> JPG, PNG | от 100x100px | не более 1мб">
+                                    Параметры файла для загрузки:<br> XLS XLSX | не более 50мб
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="col-xs-12">
+                        <button type="button" class="btn btn-primary" id="import_excel_users_ta" data-element_type="" data-element_id="" data-stream_id="" ><i class="fa fa-file-import" style="margin-right: 10px;"></i> Импортировать</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {# <div class="modal fade" id="info-about-lost-data" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" #}
+    {# aria-hidden="true" > #}
+    {# <div class="modal-dialog"> #}
+    {# <div class="modal-content"> #}
+    {# <div class="modal-header"> #}
+    {# <button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button> #}
+    {# <h4 class="modal-title ff-b" id="myModalLabel">Внимание!</h4> #}
+    {# </div> #}
+    {# <div class="modal-body" id='repeat-modal-body'> #}
+    {# <p>Внесенные изменения не будут сохранены.</p> #}
+    {# <p> Для сохранения внесенных изменений нажмите на кнопку <strong>«Сохранить»</strong> внизу страницы или <strong>«Отмена»</strong>  для отмены изменений</p> #}
+    {# </div> #}
+    {# <div class="modal-footer"> #}
+    {# </div> #}
+    {# </div> #}
+    {# </div> #}
+    {# </div> #}
+</div>
+<script>
+    $("#calendar-widget").click(function () {
+        $('#calendar-widget-picker').datepicker('show');
+    });
+
+    $("#calendar-widget-picker").datepicker({
+        dateFormat: 'yy-m-dd',
+        monthNames: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+        dayNamesMin: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+        ,
+        onChangeMonthYear: function (year, month, dp) {
+            setEventsForDatePickerCells(year, month, "#ui-datepicker-div");
+            addLegendToWidgetCalendarPicker();
+        },
+        beforeShow: function (elem, dp) {
+            addLegendToWidgetCalendarPicker();
+            let d = new Date();
+            let m = d.getMonth();
+            let y = d.getFullYear();
+            setEventsForDatePickerCells(y, m + 1, "#ui-datepicker-div");
+        }
+    }).on("change", function (e) {
+        let content = $("#calendar-day-events").find(".modal-content");
+        let url = "/student/dashboard/getCalendarDataForDay?start=";
+        let dayInfo = $(this).val();
+        content.empty();
+        content.load(url + dayInfo, function () {
+        });
+        $('#calendar-day-events').modal('show');
+        $(this).datepicker("setDate", new Date());
+    });
+
+    function addLegendToWidgetCalendarPicker() {
+        setTimeout(function () {
+            let legend = "<div style='padding-left:20px;margin-bottom: 20px;margin-top:10px;'><div><strong>Типы событий:</strong></div>";
+            legend += "<div><span style='background-color:#ed7817;width:8px;height:8px;border-radius:8px;display: inline-block; margin-right: 10px;'></span>Мероприятия</div>";
+            legend += "<div><span style='background-color:#e32112;width:8px;height:8px;border-radius:8px;display: inline-block;margin-right: 10px;'></span>Курсы</div>";
+            legend += "<div><span style='background-color:#fab82e;width:8px;height:8px;border-radius:8px;display: inline-block;margin-right: 10px;'></span>Тесты</div>";
+            legend += "<div><span style='background-color:#6b6b6b;width:8px;height:8px;border-radius:8px;display: inline-block;margin-right: 10px;'></span>Программы</div>";
+            legend += '  <a class="calendar-header-widget-link" href="{{ base_url("student/dashboard/calendar") }}">Перейти на страницу календаря</a>';
+            $('#ui-datepicker-div').append(legend);
+        }, 150);
+    }
+
+    function addLegendToCalendar() {
+        let legend = "<div style='padding-left:20px;margin-bottom: 20px;margin-top:0px;'><div><strong>Типы событий:</strong></div>";
+        legend += "<div><span style='background-color:#ed7817;width:8px;height:8px;border-radius:8px;display: inline-block; margin-right: 10px;'></span>Мероприятия</div>";
+        legend += "<div><span style='background-color:#e32112;width:8px;height:8px;border-radius:8px;display: inline-block;margin-right: 10px;'></span>Курсы</div>";
+        legend += "<div><span style='background-color:#fab82e;width:8px;height:8px;border-radius:8px;display: inline-block;margin-right: 10px;'></span>Тесты</div>";
+        legend += "<div><span style='background-color:#6b6b6b;width:8px;height:8px;border-radius:8px;display: inline-block;margin-right: 10px;'></span>Программы</div>";
+        return legend;
+    }
+
+
+    function initSidebarCalendarWidget() {
+        let d = new Date();
+        let m = d.getMonth();
+        let y = d.getFullYear();
+        setEventsForDatePickerCells(y, m + 1);
+    };
+
+    function setEventsForDatePickerCells(year, month, id = "") {
+        setTimeout(function () {
+            let url = "/student/dashboard/getCalendarDataForMonth?" + "month=" + month + "&year=" + year;
+            $.ajax({
+                type: "GET",
+                url: url,
+                dataType: 'json',
+                success: function (response) {
+                    $(id + '.ui-datepicker td > *').each(function (idx, elem) {
+                        let events = response[idx] || 0;
+                        if (events) {
+                            elem.parentElement.innerHTML = "<div>" + events + "</div>" + elem.parentElement.innerHTML;
+                        }
+                    });
+                }
+            });
+        }, 0);
+    }
+
+    function getAllEventsCountDatePickerBadge() {
+        setTimeout(function () {
+            let url = "/student/dashboard/getCalendarAllCountData";
+            $.ajax({
+                type: "GET",
+                url: url,
+                dataType: 'json',
+                success: function (response) {
+                    $('.calendar-widget-badge').text(response);
+                }
+            });
+        }, 0);
+    }
+
+    {% if sidebar == 'student' %}
+    addLegendToWidgetCalendarPicker();
+    //initSidebarCalendarWidget();
+    setInterval(getAllEventsCountDatePickerBadge, 60 * 5 * 1000);
+    getAllEventsCountDatePickerBadge();
+    {% endif %}
+
+</script>
+<style>
+    .ui-state-default {
+        background-color: transparent !important;
+        border: none !important;
+    }
+
+    .ui-datepicker td {
+        border: none !important;
+    }
+
+    .ui-datepicker td {
+        padding: 5px !important;
+    }
+
+    .ui-datepicker td .ui-state-highlight {
+        border-radius: 50%;
+        background-color: #b3b2d1 !important;
+        padding: 4px;
+    }
+
+    .ui-datepicker td .ui-state-default {
+        color: #000;
+        text-align: center;
+    }
+</style>
+{% endif %}
+{% if sidebar == 'coordinator' %}
+    <script src="{{ base_url('assets/general_template/js/coordinator.js') }}"></script>
+{% endif %}
+
+{% if check_activity_variable %}
+    <script src="{{ base_url('assets/js/checkactivity.js') }}"></script>
+{% endif %}
+
+<script>
+    function escapeHtml(text) {
+        var parser = new DOMParser;
+        var dom = parser.parseFromString(text, 'text/html');
+        var decodedString = dom.body.textContent;
+
+        return decodedString;
+    }
+
+    $("#platformSearch").autocomplete({
+        source: function (request, response) {
+            $.get("/{{ twig_tpl_link }}/dashboard/search", {term: request.term}, function (data) {
+                response($.map(data, function (item) {
+                    return {
+                        label: item.name,
+                        value: item.name,
+                        link: item.link
+                    };
+                }));
+            }, 'json');
+        },
+        select: function (event, ui) {
+            location.href = ui.item.link;
+        }
+    });
+</script>
+<script>$.fn.slider = null</script>
+{% block footer %}{% endblock %}
+<script>
+    function updateFilter() {
+        var filterNotEmptyFields = $.grep($('#courses-filter [name]:not([type="hidden"])').serializeArray(), function (item) {
+            return (item.value && item.value.trim() != '');
+        });
+        if (filterNotEmptyFields.length > 0) {
+            $("#courses-filter").addClass("active_filter");
+        } else {
+            $("#courses-filter").removeClass("active_filter");
+        }
+    }
+
+    $(document).ready(function () {
+        updateFilter();
+    });
+    $('body').on("change", '#courses-filter [name]:not([type="hidden"])', function () {
+        updateFilter();
+    });
+    $('body').on('hidden.bs.modal', function () {
+        if($('.modal.in').length > 0)
+        {
+            $('body').addClass('modal-open');
+        } else {
+            $('body').removeClass('modal-open');
+            $('.modal-backdrop').remove();
+        }
+    });
+</script>
+<script>
+    $('.morefile').on('click', function () {
+
+        var tab = $('#questions-tab .tab-pane.active');
+        var elem = tab.find('.clone').length + 1;
+        var que = tab.find('input[name="new_file"]').val();
+
+        $(this).before('<label class="col-md-3 col-sm-12">{{ lang('upload_file') }}</label>' +
+            ' <div class="col-md-9 col-sm-12 clone">' +
+            ' <div class="form-control" id="upload-input-file"><input type="hidden" name="new_file" value="1">' +
+            ' <input type="hidden"' +
+            ' name="file_upload_adv[' + que + '][]"' +
+            ' id="question-file-adv-' + que + '-' + elem + '"' +
+            ' value="">' +
+            '<input type="hidden"' +
+            ' name="file_upload_name[' + que + '][]"' +
+            ' id="question-file-name-' + que + '-' + elem + '"' +
+            ' value="">' +
+            '<input type="file" class="adapt-img" accept="image/*" name="question-file-adv-' + que + '"' +
+            ' data-api-url="{{ base_url('teacher/dashboard/loadApi/eventFileAdv') }}"' +
+            'data-inp-name="question-file-adv-' + que +
+            '-' + elem + '" data-inp-orignamefile="question-file-name-' + que + '-' + elem + ' ">' +
+            ' <div class="upload-info"><span ' +
+            ' class="upload-info-text video-file-span"> {{ lang('thumb_file_info') }} </span>' +
+            ' </div>' +
+            ' </div>' +
+            ' <div class="progress" style="display: none">' +
+            ' <div class="progress-bar" role="progressbar" aria-valuenow="60"' +
+            ' aria-valuemin="0" aria-valuemax="100"' +
+            ' style="width: 60%;"></div></div></div>');
+
+    })
+</script>
+<script>
+    function delFile(id) {
+        $.ajax({
+            type: 'POST',
+            url: '/teacher/curs/delFile',
+            dataType: 'json',
+            data: {id: id},
+            success: function (data) {
+                //console.log($('#clone' + id));
+                $('#clone-' + id).remove();
+            }
+        })
+    }
+
+
+    function showThemes() {
+        var taba = $('#questions-tab .tab-pane.active');
+        var check = taba.find('.theme');
+
+        if (taba.find('.cleer_on_edits').prop('checked') === true) {
+            check.css('display', 'block');
+        } else {
+            check.css('display', 'none');
+        }
+    }
+
+</script>
+<script>
+    let loading = '{{ lang('loading...') }}';
+    let upload_file = '{{ lang('upload_file') }}';
+    let delete_file = '{{ lang('delete_file') }}';
+    let delete_files = '{{ lang('delete_files') }}';
+</script>
+
+<script>
+    {{ (innerscripts is defined and innerscripts is not empty) ? innerscripts|raw : ((data.innerscripts is defined and data.innerscripts is not empty) ? data.innerscripts|raw : '') }}
+</script>
+
+{# обработка кликов лайков #}
+{% if sidebar == 'student' %}
+    <script src="{{ base_url('assets/general_styles/js/student/badges.js') }}"></script>
+
+    <script>
+        function setLike(link) {
+
+            let element_id = $(link).data("id");
+            let type = $(link).data("type");
+            let url = "{{ base_url("student/dashboard/setlike") }}";
+
+            if (element_id != "" && type != "") {
+
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    dataType: 'json',
+                    data: {
+                        element_id: element_id,
+                        type: type
+                    },
+                    success: function (response) {
+                        if (typeof (response.success) !== 'undefined' && typeof (response.count) !== 'undefined') {
+                            {# лайк добавлен #}
+                            if (response.success == "1") {
+                                $(link).find("i").removeClass("far liked fa");
+                                $(link).find("i").addClass("fa liked");
+                            }
+                            {# лайк удален #}
+                            if (response.success == "0") {
+                                $(link).find("i").removeClass("far liked fa");
+                                $(link).find("i").addClass("far");
+                            }
+
+                            $(link).find("span").text(response.count);
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+{% endif %}
+</body>
+</html>
+
+

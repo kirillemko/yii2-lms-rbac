@@ -10,7 +10,8 @@
         }
     ],
     "require": {
-        "cebe/assetfree-yii2": "*"
+        "cebe/assetfree-yii2": "*",
+        "kirillemko/yii-ci-integration": "*"
     },
     "autoload": {
         "psr-4": { "kirillemko\\yiilmsrbac\\": "src\\" }

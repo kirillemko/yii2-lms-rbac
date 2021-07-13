@@ -1,0 +1,27 @@
+i.dragHandle{
+    font-size: 20px;
+    cursor: move;
+    margin-left:10px;
+}
+.draggable-ghost{
+    background-color: rgba(255, 210, 219, 0.42) !important;
+}
+
+
+.el-table .warning-row {
+    background: #fff5f5;
+}
+
+.el-table .success-row {
+    background: #fafff5;
+}
+
+
+#competenceReportTable td {
+    padding: 5px 0;
+}
+
+
+.el-table .cell {
+    word-break: unset;
+}

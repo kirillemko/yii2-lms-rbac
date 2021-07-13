@@ -44,6 +44,10 @@ class LMSDbManager extends BaseManager
      */
     public $userSearchFields = ['email', 'last_name', 'first_name', 'midle_name'];
 
+    /**
+     * @var array ID админ группы, для которой создать первоначальные пермишенны в миграции
+     */
+    public $adminGroupIdForInitMigration = 1;
 
     public $permissionTable = '{{%permissions}}';
     public $groupsTable = '{{%groups}}';
@@ -249,15 +253,12 @@ class LMSDbManager extends BaseManager
 
 
 
-//    public function invalidateCache()
+//    public function invalidateCache($userId)
 //    {
 //        if ($this->cache !== null) {
-//            $this->cache->delete($this->cacheKey);
-//            $this->items = null;
-//            $this->rules = null;
-//            $this->parents = null;
+//            $this->cache->delete($this->cacheKey . $userId);
+//            $this->_checkAccessPermissions[(string) $userId] = null;
 //        }
-//        $this->_checkAccessAssignments = [];
 //    }
 
     public function getAssignmentsFromCache($user_id)

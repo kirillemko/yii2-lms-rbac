@@ -1,4 +1,4 @@
-Yii2 Knomary LMS RBAC DbManager
+Yii2 LMS RBAC DbManager
 =========================
 
 
@@ -10,13 +10,13 @@ The preferred way to install this extension is through [composer](http://getcomp
 Either run
 
 ```
-composer require kirillemko/yii2-knomary-lms-rbac
+composer require kirillemko/yii2-lms-rbac
 ```
 
 or add
 
 ```
-"kirillemko/yii2-knomary-lms-rbac": "*"
+"kirillemko/yii2-lms-rbac": "*"
 ```
 
 to the require section of your composer.json.
@@ -51,7 +51,7 @@ ID админ группы, для которой в миграции будут
 
 Далее выполнить миграцию для создания дополнительных таблиц.
 ```
-vendor\kirillemko\yii-ci-integration\src\yii migrate --migrationPath=@vendor/kirillemko/yii2-knomary-lms-rbac/migrations/
+vendor\kirillemko\yii-ci-integration\src\yii migrate --migrationPath=@vendor/kirillemko/yii2-lms-rbac/migrations/
 ```
 
 Пример для работы с менеджером лежит в папке с контроллером Rbac.php. Там есть весь цикл от получения ролей, прав, пользователей. До создания и удаления
